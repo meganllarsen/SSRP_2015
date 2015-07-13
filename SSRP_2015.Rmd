@@ -1,0 +1,26 @@
+---
+title: "SSRP 2015"
+author: "ML Larsen"
+date: "Monday, July 13, 2015"
+output: pdf_document
+---
+
+To make plots in R, we use the function ***plot()***. 
+There are any number of parameters that you can use to set up the graph you want to make, but you should think about what best describes your data.
+
+```{r}
+
+#Scatter plots
+
+x <- 
+y <-
+  
+plot(x, y, 
+     xlim = c(,), ylim = c(,),              # specifiy your plot range
+     type = , pch = , lwd = , col = "",     # specify what you want your plot to look like
+     xlab = list("", cex = 1.5, font = 2),  # label the x-axis
+     ylab = list("", cex = 1.5, font = 2),  # label the y-axis            
+     cex = 20, cex.lab = 1.5, cex.axis = 1.15 # change the sizes
+     )
+
+```
