@@ -1,0 +1,41 @@
+
+
+Software Version	2.01.14
+
+
+
+Experiment File Path:	C:\Users\Public\Documents\Experiments\Rachel\0723_07122015_RNF.xpt
+Protocol File Path:	C:\Users\Public\Documents\Protocols\EcoLogPlate_Read_96well.prt
+
+
+
+Plate Number	Plate 1
+Date	7/12/2015
+Time	7:46:58 PM
+Reader Type:	Synergy Mx
+Reader Serial Number:	219512
+Reading Type	Reader
+
+Procedure Details
+
+Plate Type	96 WELL PLATE
+Read	Absorbance Endpoint
+	Full Plate
+	Wavelengths:  590
+	Read Speed: Normal,  Delay: 100 msec,  Measurements/Data Point: 8
+
+
+
+Actual Temperature:	24.0
+
+Results
+	1	2	3	4	5	6	7	8	9	10	11	12
+A	0.112	0.087	0.073	0.645	0.072	0.080	0.067	0.546	0.053	0.078	0.073	0.716	590
+B	0.131	0.471	0.080	0.880	0.105	0.403	0.051	0.792	0.104	0.470	0.081	0.847	590
+C	0.810	0.089	0.083	0.107	0.781	0.100	0.082	0.105	0.757	0.100	0.085	0.165	590
+D	0.944	0.983	0.113	0.610	0.877	0.901	0.055	0.544	0.844	0.901	0.043	0.616	590
+E	0.142	0.574	0.120	0.218	0.181	0.506	0.117	0.184	0.163	0.626	0.117	0.224	590
+F	0.147	0.728	0.094	0.110	0.156	0.663	0.094	0.124	0.146	0.772	0.089	0.122	590
+G	0.091	0.112	0.239	0.090	0.125	0.105	0.194	0.096	0.130	0.127	0.183	0.089	590
+H	0.059	0.124	0.146	0.527	0.115	0.214	0.162	0.576	0.114	0.317	0.139	0.579	590
+
