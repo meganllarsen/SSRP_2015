@@ -52,7 +52,7 @@ Dakayla Calhoun: SSRP Student,
 
 Dr. Megan Behringer: Postdoctoral Fellow in the [Lennon Lab](http://www.indiana.edu/~microbes/people.php)
 
-Jared Brewer: REU Researcher, Undergraduate, Department of Biology, Transylvania University. 
+[Jared Brewer](http://jaredbrewer.me): REU Researcher, Undergraduate, Department of Biology, Transylvania University. 
 
 Rachel Ferrill: REU Researcher, Undergraduate, Department of Biology, Transylvania University. 
 
