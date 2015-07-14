@@ -1,0 +1,91 @@
+---
+title: "SSRP 2015"
+author: "KJ Locey, ML Larsen"
+date: "Monday, July 13, 2015"
+header-includes:
+   - \usepackage{array}
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+
+## OVERVIEW
+Here, we will use R and RStudio to examine patterns of change in resource use between an ancestral strain a derived strain. We will begin by focusing on three aspects:
+
+### 1.) Average resource use 
+One of the simplest, and hence, first questions to ask is whether there are directional changes in average resource use and the average number of resources used. Does the derived use more resources or less resources? Is the derived able to use each resource to a greater or lesser degree?
+
+### 2.) Resource breadth vs. capacity
+A second and more in-depth question is how the number of resources used relates to the degree to which an organisms typically uses resources. This may relate to the potential for the organism to use generalist (i.e., okay at using many resources, "jack of all trades") and specialist strategies (i.e., really good at using just a few resources).
+
+### 3.) Changes in the metabolic "fingerprint"
+Note how the first two questions do not actually account for *which* resources get used or how the various resources are related by a common element or nutrient. However, by combining information on which resources are used, how greatly they are used, and how the resources are related, we can obtain a metabolic "fingerprint" for the organism. In this way, we can ask whether the fingerprint has changed between the ancestral strain and the derived strain.
+
+
+## 1.) SETUP
+### A. Clear the Workspace and Retrieve and Set the Working Directory
+We will begin our analysis by clearing our workspace of any variables, that is, leftover information from any previous work. We then set our 'working directory', which points R to the folder that contains our project's files (i.e., SSRP_2015).
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+rm(list=ls()) 
+getwd() 
+setwd("~/GitHub/SSRP_2015") 
+```
+
+### Install Packages
+Next, we will import statistical packages that will allow us to analyze our data with specific tools.
+We will begin by importing a package called `vegan`, which is often used by biologists and ecologists.
+Let's install the `vegan` package and its dependencies. 
+If you are running `vegan` for the first time, you will need to install it with the `install.packages` function. 
+Otherwise, we recommend you just use the `require` function to load `vegan` and its dependencies.
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+#install.packages("vegan") 
+require("vegan")
+```
+
+## 2) LOADING DATA
+Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+## Load Data
+a <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_07_12_2015_RNF_parsed.txt")
+ancestral <- as.matrix(a)
+d <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt")
+derived <- as.matrix(d)
+names <- read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt")
+derived <- as.matrix(names)
+```
+
+### 3) NORMALIZING DATA
+Because the number of cells can vary across plates, it's important to normalize our data, i.e., make our resulting values directly comparable. We will do this using the value recorded for the well where there was only **water** from the ancestral plate.
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+
+
+
+```
+
+
+### 1.) Average resource use
+Let's examine whether 
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+
+# INSERT INCREDIBLE CODE
+
+```
+
+
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+# Demonstration of a scatter plots 
+x <- c(1,2,3,4,5,6,7,8,9)
+y <- c(1,2,3,4,5,6,7,8,9)
+
+plot(x, y, 
+     xlim = c(min(x),max(x)), ylim = c(min(y),max(y)), # specifiy your plot range
+     xlab = list("x", cex = 1.5, font = 2),  # label the x-axis
+     ylab = list("y", cex = 1.5, font = 2),  # label the y-axis            
+     cex = 2, cex.lab = 1.5, cex.axis = 1.15 # change the sizes
+     )
+```
