@@ -96,9 +96,28 @@ Let's examine the following questions:
 1) How many resources were used by each strain?
 2) What resources are used by each strain?
 
+Because water does not contain a carbon substrate, it will act as our control data. If the adsorbance value is greater than the adsorbance of water, we will include it in the number of used resources.
+
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 m2 <- melt(dat, ids = c("sub.group","substrate"))
 c1 <- cast(m2, substrate ~ variable , mean)
+
+threshold <- 0.037
+
+length(c1[,3][c1[,3] > threshold])
+length(c1[,4][c1[,4] > threshold])
+```
+
+Let's visualize the resources used per isolate
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+c1 <- as.matrix(c1)
+
+barplot(c1[,3:4],
+        width = 1, beside = T,
+        ylim = c(0,1), las = 1, cex.axis = 1.15,
+        main = "Resource Use",
+        xlab = list("Substrate", cex = 1.5, font = 2),
+        ylab = list("OD", cex = 1.5, font = 2))
 
 ```
 
