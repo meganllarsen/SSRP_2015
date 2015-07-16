@@ -54,11 +54,12 @@ Even water appears to be used, despite the absence of nutrients in it.
 Consequently, we need to determine which values constitute real use.
 To do this, we will simply not count any resource as being used, if the corresponding value is less than two standard deviations away from the value for water.
 
-```{r}
+```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 cutoff <- function(vals){
-  
+  # should also return the error
   water <- vals[1]
   vals <- vals[-1]
+  # mean, error, sd, should be based on resource qualified as being used
   std <- sd(vals)
   avg <- mean(vals)
   cutoff <- 1*std
@@ -75,53 +76,103 @@ cutoff <- function(vals){
 
 
 ## 2) LOADING DATA
-Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
+Here, we will load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
+But first, we need to find the average use values for water that were recorded for each species at a given time.
+We will use these values, which really do not reflect resource use, to normalize (or make comparable) the resource use values across different plates.
 
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
 file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
 file.names <- list.files(path = file.path, all.files=FALSE, 
                     full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
 
+# read in ancestor files and grab average water use value
+water.vals <- vector(mode="list", length=3)
+# create a list of unique identifiers by combining the id and duration
+names(water.vals) <- c('0711.24', '0711.48', '0723.24')
+
+ct = 1
+for (name in file.names){
+  file.name.info <- strsplit(name, "\\.") # split file name
+  sp.id <- file.name.info[[1]][2] # organism ID
+  AorD <- file.name.info[[1]][3] # ancestral or derived
+  duration <- file.name.info[[1]][6] # 24 or 48 hrs
+  
+  if (AorD == 'A'){ # if the strain is ancestral...
+    new.name <- paste(sp.id, duration, sep='.')
+    dat <- as.matrix(read.table(paste(file.path, name, sep='')))
+    avg <- mean(dat[1,1], dat[1,5], dat[1,9])
+    index <- match(new.name, names(water.vals))
+    water.vals[[index]] <- avg
+    ct = ct + 1
+    }
+  } 
+```
+
+
+Next we save the world...
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
 file.name.data <- c()
 for (name in file.names){
-  file.name.info <- strsplit(name, "\\.") # split file name 
+  file.name.info <- strsplit(name, "\\.") # split file name
   file.name.info <- file.name.info[[1]][-7]
+  sp.id <- file.name.info[[2]] # organism ID
+  AorD <- file.name.info[[3]] # ancestral or derived
+  duration <- file.name.info[[6]] # 24 or 48 hrs
+  data <- as.matrix(read.table(paste(file.path, name, sep='')))
   
-  res.use.data <- as.matrix(read.table(paste(file.path, name, sep='')))
-  i1.vals <- as.numeric(res.use.data[,1:4])
+  # if it's an ancestor file, do not normalize
+  if (AorD == 'D'){
+    # Remove the background
+    # background <- 0.042
+    new.name <- paste(sp.id, duration, sep='.')
+    index <- match(new.name, names(water.vals))
+    norm.val <- water.vals[[index]]
+    
+    # Calculate the mean reading for water
+    avg.water <- mean(data[1,1], data[1,5], data[1,9])
+    # Remove background and Normalize the data
+    data <- round(data * (norm.val/avg.water), digits = 3)
+    }
+  
+  i1.vals <- as.numeric(data[,1:4])
   i1.var <- var(i1.vals)
   results <- cutoff(i1.vals)
   i1.num <- results[1] 
   i1.mean <- results[2]  
   i1.sd <- results[3] 
+  i1.err <- i1.sd/sqrt(length(i1.vals))
   
-  i2.vals <- as.numeric(res.use.data[,5:8])
+  i2.vals <- as.numeric(data[,5:8])
   i2.var <- var(i2.vals)
   results <- cutoff(i2.vals)
   i2.num <- results[1] 
   i2.mean <- results[2]  
   i2.sd <- results[3] 
+  i2.err <- i2.sd/sqrt(length(i2.vals))
   
-  i3.vals <- as.numeric(res.use.data[,9:12])
+  i3.vals <- as.numeric(data[,9:12])
   i3.var <- var(i3.vals)
   results <- cutoff(i1.vals)
   i3.num <- results[1] 
   i3.mean <- results[2]  
   i3.sd <- results[3] 
+  i3.err <- i3.sd/sqrt(length(i3.vals))
   
-  file.name.info <- c(file.name.info, i1.mean, i1.sd, i1.num)
-  file.name.info <- c(file.name.info, i2.mean, i2.sd, i2.num)
-  file.name.info <- c(file.name.info, i3.mean, i3.sd, i3.num)
+  file.name.info <- c(file.name.info, i1.mean, i1.sd, i1.err, i1.num)
+  file.name.info <- c(file.name.info, i2.mean, i2.sd, i2.err, i2.num)
+  file.name.info <- c(file.name.info, i3.mean, i3.sd, i3.err, i3.num)
   file.name.data <- rbind(file.name.data, file.name.info)
   }
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
-                      nrow=28, byrow=F),stringsAsFactors=TRUE)
+                      nrow=28, byrow=FALSE), stringsAsFactors=TRUE)
 dat.frame<- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
                       'plate', 'plate.replicate', 'duration',
-                      'i1.mean', 'i1.sd', 'i1.num',
-                      'i2.mean', 'i2.sd', 'i2.num',
-                      'i3.mean', 'i3.sd', 'i3.num'))
+                      'i1.mean', 'i1.sd', 'i1.err', 'i1.num.resources',
+                      'i2.mean', 'i2.sd', 'i2.err', 'i2.num.resources',
+                      'i3.mean', 'i3.sd', 'i3.err', 'i3.num.resources'))
 
 resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
 mol.groups <- matrix("NA", nrow = 8, ncol = 12)
@@ -201,18 +252,4 @@ barplot(c1[,3:4],
         xlab = list("Substrate", cex = 1.5, font = 2),
         ylab = list("OD", cex = 1.5, font = 2))
 
-```
-
-
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-# Demonstration of a scatter plots 
-x <- c(1,2,3,4,5,6,7,8,9)
-y <- c(1,2,3,4,5,6,7,8,9)
-
-plot(x, y, 
-     xlim = c(min(x),max(x)), ylim = c(min(y),max(y)), # specifiy your plot range
-     xlab = list("x", cex = 1.5, font = 2),  # label the x-axis
-     ylab = list("y", cex = 1.5, font = 2),  # label the y-axis            
-     cex = 2, cex.lab = 1.5, cex.axis = 1.15 # change the sizes
-     )
 ```
