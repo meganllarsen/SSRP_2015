@@ -62,13 +62,14 @@ file.names <- list.files(path = file.path, all.files=FALSE,
 
 for (name in file.names){
   print(name)
-  strsplit(paste(path,name), "\\.") # split file name  
-  date <- [[1]]
-  strain.id <- [[2]]
-  AorD <- [[3]] # ancestral or derived
-  plate <- [[4]]
-  plate.replicate <- [[5]]
-  duration <- [[6]]
+  file.name.info <- strsplit(paste(file.path, name, sep=''), "\\.") # split file name  
+  print(file.name.info)
+  date <- file.name.info[[1]]
+  strain.id <- file.name.info[[2]]
+  AorD <- file.name.info[[3]] # ancestral or derived
+  plate <- file.name.info[[4]]
+  plate.replicate <- file.name.info[[5]]
+  duration <- file.name.info[[6]]
   #dat <- as.matrix(read.table(paste('~/GitHub/SSRP_2015/data/cleaned/', name))
   }
 
