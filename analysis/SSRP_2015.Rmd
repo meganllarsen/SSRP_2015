@@ -65,7 +65,7 @@ cutoff <- function(vals){
       num = num + 1      
       } 
     } 
-  return(num, mean, std)
+  return(c(num, mean, std))
   }
 ```
 
@@ -82,24 +82,38 @@ for (name in file.names){
   res.use.data <- as.matrix(read.table(paste(file.path, name, sep='')))
   i1.vals <- as.numeric(res.use.data[,1:4])
   i1.var <- var(i1.vals)
-  list[i1.num, i1.mean, i1.sd] <- cutoff(i1.vals)
-    
+  results <- cutoff(i1.vals)
+  i1.num <- results[1] 
+  i1.mean <- results[2]  
+  i1.sd <- results[3] 
+  
   i2.vals <- as.numeric(res.use.data[,5:8])
   i2.var <- var(i2.vals)
-  list[i2.num, i2.mean, i2.sd] <- cutoff(i1.vals)
+  results <- cutoff(i2.vals)
+  i2.num <- results[1] 
+  i2.mean <- results[2]  
+  i2.sd <- results[3] 
   
   i3.vals <- as.numeric(res.use.data[,9:12])
   i3.var <- var(i3.vals)
-  list[i3.num, i3.mean, i3.sd] <- cutoff(i1.vals)
+  results <- cutoff(i1.vals)
+  i3.num <- results[1] 
+  i3.mean <- results[2]  
+  i3.sd <- results[3] 
   
-  file.name.info <- c(file.name.info, i1.mean, i1.num)
+  file.name.info <- c(file.name.info, i1.mean, i1.sd, i1.num)
+  file.name.info <- c(file.name.info, i2.mean, i2.sd, i2.num)
+  file.name.info <- c(file.name.info, i3.mean, i3.sd, i3.num)
   file.name.data <- rbind(file.name.data, file.name.info)
   }
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
                       nrow=28, byrow=F),stringsAsFactors=TRUE)
-dat.frame<- setNames(dat.frame, c('data', 'strain', 'AorD',
-                      'plate', 'plate.replicate', 'duration', 'i1', 'i2', 'i3'))
+dat.frame<- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
+                      'plate', 'plate.replicate', 'duration',
+                      'i1.mean', 'i1.sd', 'i1.num',
+                      'i2.mean', 'i2.sd', 'i2.num',
+                      'i3.mean', 'i3.sd', 'i3.num'))
 
 resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
 mol.groups <- matrix("NA", nrow = 8, ncol = 12)
