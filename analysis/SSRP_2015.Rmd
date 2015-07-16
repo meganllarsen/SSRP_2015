@@ -1,6 +1,6 @@
 ---
 title: "SSRP 2015"
-author: "KJ Locey, ML Larsen"
+author: "Lennon Lab"
 date: "Monday, July 13, 2015"
 header-includes:
    - \usepackage{array}
