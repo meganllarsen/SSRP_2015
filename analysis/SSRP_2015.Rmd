@@ -60,16 +60,16 @@ cutoff <- function(vals){
   water <- vals[1]
   vals <- vals[-1]
   std <- sd(vals)
-  mean <- mean(vals)
-  cutoff <- 2*std
+  avg <- mean(vals)
+  cutoff <- 1*std
   num <- 0
   
   for (val in vals){
-    if (val <= water+cutoff){
+    if (val > water+cutoff){
       num = num + 1      
       } 
     } 
-  return(c(num, mean, std))
+  return(c(num, avg, std))
   }
 ```
 
