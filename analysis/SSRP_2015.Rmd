@@ -1,6 +1,6 @@
 ---
 title: "SSRP 2015"
-author: "KJ Locey, ML Larsen"
+author: "Lennon Lab"
 date: "Monday, July 13, 2015"
 header-includes:
    - \usepackage{array}
@@ -40,36 +40,58 @@ If you are running `vegan` for the first time, you will need to install it with 
 Otherwise, we recommend you just use the `require` function to load `vegan` and its dependencies.
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-#install.packages("vegan"); install.packages("reshape") 
-require("vegan");require("reshape")
+#install.packages("vegan") 
+#install.packages("reshape") 
+require("vegan")
+require("reshape")
 ```
 
 ## 2) LOADING DATA
 Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-## Load Data
-a <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_07_12_2015_RNF_parsed.txt")
-ancestral <- as.matrix(a)
+file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+dat.frame <- data.frame(date = integer(), strain = character(),
+                 AorD = character(), plate = character(),
+                 plate.replicate = character(), duration = character())
+  
+  
+file.names <- list.files(path = file.path, all.files=FALSE, 
+                         full.names=FALSE, recursive=FALSE,
+                         ignore.case=FALSE, include.dirs=FALSE)
 
-d <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt")
-derived <- as.matrix(d)
+for (name in file.names){
+  print(name)
+  file.name.info <- strsplit(paste(file.path, name, sep=''), "\\.") # split file name  
+  print(file.name.info)
+  date <- file.name.info[[1]]
+  strain.id <- file.name.info[[2]]
+  AorD <- file.name.info[[3]] # ancestral or derived
+  plate <- file.name.info[[4]]
+  plate.replicate <- file.name.info[[5]]
+  duration <- file.name.info[[6]]
+  #dat <- as.matrix(read.table(paste('~/GitHub/SSRP_2015/data/cleaned/', name))
+  }
 
-names <- read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt")
-ecolog.names <- as.matrix(names)
 
+
+derived <- as.matrix(read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt"))
+
+resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
+
+
+file.names
 mol.groups <- matrix("NA", nrow = 8, ncol = 12)
 mol.groups <- as.matrix(mol.groups)
-
 ```
 
 ### 3) NORMALIZING DATA
 Because the number of cells can vary across plates, it's important to normalize our data, i.e., make our resulting values directly comparable. We will do this using the value recorded for the well where there was only **water** from the ancestral plate.
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-# First, we will reshape our data from a matrix to long format
+# We reshape our data from a matrix to long format
 m1.a <- melt(ancestral); m1.d <- melt(derived)
-m1.names <- melt(ecolog.names); m1.groups <- melt(mol.groups)
+m1.names <- melt(resource.names); m1.groups <- melt(mol.groups)
 
 # Next, merge the columns of interest together
 dat <- data.frame(mol.groups[,3], as.character(m1.names[,3]), m1.a[,3], m1.d[,3])
@@ -87,7 +109,6 @@ der.water <- mean(subset(dat, dat[,2]=="Water")[1:3,4])
 #Remove background and Normalize the data
 dat$anc.norm <- dat$anc * (anc.water/anc.water) 
 dat$der.norm <- round(dat$der * (anc.water/der.water), digits = 3) 
-
 ```
 
 
