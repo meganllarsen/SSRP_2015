@@ -16,7 +16,7 @@ convert <- function(filename){
                        "7", "8", "9", "10", "11", "12")
   
   # Save a .csv of the plate output for reading in later.
-  out.filename <- paste(getwd(),"data","cleaned", sub(".xlsx", replacement=".txt", filename), sep='/')
+  out.filename <- paste(getwd(),"data","cleaned", sub(".xlsx", replacement="_parsed.txt", filename), sep='/')
   write.table(plate, file=out.filename, col.names=FALSE, row.names=FALSE)
 }
 
