@@ -51,11 +51,6 @@ Next, let's load the data generated from our plate reader and the Ecolog softwar
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
-#dat.frame <- data.frame(date = integer(), strain = character(),
-#                 AorD = character(), plate = character(),
-#                 plate.replicate = character(), duration = character())
-  
-  
 file.names <- list.files(path = file.path, all.files=FALSE, 
                          full.names=FALSE, recursive=FALSE,
                          ignore.case=FALSE, include.dirs=FALSE)
@@ -67,6 +62,9 @@ for (name in file.names){
   file.name.data <- rbind(file.name.data, file.name.info)
   }
 
+dat.frame <- data.frame(matrix(unlist(file.name.data),
+                        nrow=28, byrow=F),stringsAsFactors=FALSE)
+dat.frame<- setNames(dat.frame, c('data', 'strain', 'AorD', 'plate', 'plate.replicate', 'duration'))
 
 resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
 
