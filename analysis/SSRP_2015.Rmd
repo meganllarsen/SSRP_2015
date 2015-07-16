@@ -47,8 +47,12 @@ require("vegan")
 require("reshape")
 ```
 
-## 2) LOADING DATA
-Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
+
+## DEFINE A FUNCTION FOR RESOURCE USE
+A look at the data will reveal that among species, isolates, and replicates, that nearly all resourcess appear to be used to some degree.
+Even water appears to be used, despite the absence of nutrients in it.
+Consequently, we need to determine which values constitute real use.
+To do this, we will simply not count any resource as being used, if the corresponding value is less than two standard deviations away from the value for water.
 
 ```{r}
 cutoff <- function(vals){
@@ -68,6 +72,10 @@ cutoff <- function(vals){
   return(c(num, mean, std))
   }
 ```
+
+
+## 2) LOADING DATA
+Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
