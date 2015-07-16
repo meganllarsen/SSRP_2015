@@ -13,7 +13,7 @@ geometry: margin=2.54cm
 Here, we will use R and RStudio to examine patterns of change in resource use between an ancestral strain a derived strain. We will begin by focusing on three aspects:
 
 ### 1.) Average resource use 
-One of the simplest, and hence, first questions to ask is whether there are directional changes in average resource use and the average number of resources used. Does the derived use more resources or less resources? Is the derived able to use each resource to a greater or lesser degree?
+One of the simplest, and hence, first questions to ask is whether there are changes in average resource use and the average number of resources used. For instance, does the derived use more resources or less resources? Is the derived able to use each resource to a greater or lesser degree?
 
 ### 2.) Resource breadth vs. capacity
 A second and more in-depth question is how the number of resources used relates to the degree to which an organisms typically uses resources. This may relate to the potential for the organism to use generalist (i.e., okay at using many resources, "jack of all trades") and specialist strategies (i.e., really good at using just a few resources).
@@ -24,7 +24,8 @@ Note how the first two questions do not actually account for *which* resources g
 
 ## 1.) SETUP
 ### A. Clear the Workspace and Retrieve and Set the Working Directory
-We will begin our analysis by clearing our workspace of any variables, that is, leftover information from any previous work. We then set our 'working directory', which points R to the folder that contains our project's files (i.e., SSRP_2015).
+We will begin our analysis by clearing our workspace of any variables, that is, leftover information from any previous work. 
+We then set our 'working directory', which points R to the folder that contains our project's files (i.e., SSRP_2015).
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 rm(list = ls()) 
@@ -49,33 +50,84 @@ require("reshape")
 ## 2) LOADING DATA
 Next, let's load the data generated from our plate reader and the Ecolog software as well as a table of names corresponding to each resource and location on the plates.
 
+```{r}
+cutoff <- function(vals){
+  
+  water <- vals[1]
+  vals <- vals[-1]
+  std <- sd(vals)
+  mean <- mean(vals)
+  cutoff <- 2*std
+  num <- 0
+  
+  for (val in vals){
+    if (val <= water+cutoff){
+      num = num + 1      
+      } 
+    } 
+  return(num, mean, std)
+  }
+```
+
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
 file.names <- list.files(path = file.path, all.files=FALSE, 
-                         full.names=FALSE, recursive=FALSE,
-                         ignore.case=FALSE, include.dirs=FALSE)
+                    full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
 
-file.name.data <- c() 
+file.name.data <- c()
 for (name in file.names){
-  file.name.info <- strsplit(name, "\\.") # split file name  
+  file.name.info <- strsplit(name, "\\.") # split file name 
   file.name.info <- file.name.info[[1]][-7]
+  
+  res.use.data <- as.matrix(read.table(paste(file.path, name, sep='')))
+  i1.vals <- as.numeric(res.use.data[,1:4])
+  i1.var <- var(i1.vals)
+  list[i1.num, i1.mean, i1.sd] <- cutoff(i1.vals)
+    
+  i2.vals <- as.numeric(res.use.data[,5:8])
+  i2.var <- var(i2.vals)
+  list[i2.num, i2.mean, i2.sd] <- cutoff(i1.vals)
+  
+  i3.vals <- as.numeric(res.use.data[,9:12])
+  i3.var <- var(i3.vals)
+  list[i3.num, i3.mean, i3.sd] <- cutoff(i1.vals)
+  
+  file.name.info <- c(file.name.info, i1.mean, i1.num)
   file.name.data <- rbind(file.name.data, file.name.info)
   }
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
-                        nrow=28, byrow=F),stringsAsFactors=FALSE)
-dat.frame<- setNames(dat.frame, c('data', 'strain', 'AorD', 'plate', 'plate.replicate', 'duration'))
+                      nrow=28, byrow=F),stringsAsFactors=TRUE)
+dat.frame<- setNames(dat.frame, c('data', 'strain', 'AorD',
+                      'plate', 'plate.replicate', 'duration', 'i1', 'i2', 'i3'))
 
 resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
-
 mol.groups <- matrix("NA", nrow = 8, ncol = 12)
 mol.groups <- as.matrix(mol.groups)
 ```
+
 
 ### 3) NORMALIZING DATA
 Because the number of cells can vary across plates, it's important to normalize our data, i.e., make our resulting values directly comparable. We will do this using the value recorded for the well where there was only **water** from the ancestral plate.
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
+file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+file.names <- list.files(path = file.path, all.files=FALSE, 
+                    full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
+
+file.name.data <- c() 
+for (name in file.names){
+  ## Load Data
+  a <- read.table(paste(file.path, name, sep=''))
+  ancestral <- as.matrix(a)
+
+  d <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt")
+  derived <- as.matrix(d)
+
+  names <- read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt")
+  ecolog.names <- as.matrix(names)
+  }
+
 # We reshape our data from a matrix to long format
 m1.a <- melt(ancestral); m1.d <- melt(derived)
 m1.names <- melt(resource.names); m1.groups <- melt(mol.groups)
