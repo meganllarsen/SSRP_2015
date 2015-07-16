@@ -51,36 +51,25 @@ Next, let's load the data generated from our plate reader and the Ecolog softwar
 
 ```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
 file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
-dat.frame <- data.frame(date = integer(), strain = character(),
-                 AorD = character(), plate = character(),
-                 plate.replicate = character(), duration = character())
+#dat.frame <- data.frame(date = integer(), strain = character(),
+#                 AorD = character(), plate = character(),
+#                 plate.replicate = character(), duration = character())
   
   
 file.names <- list.files(path = file.path, all.files=FALSE, 
                          full.names=FALSE, recursive=FALSE,
                          ignore.case=FALSE, include.dirs=FALSE)
 
+file.name.data <- c() 
 for (name in file.names){
-  print(name)
-  file.name.info <- strsplit(paste(file.path, name, sep=''), "\\.") # split file name  
-  print(file.name.info)
-  date <- file.name.info[[1]]
-  strain.id <- file.name.info[[2]]
-  AorD <- file.name.info[[3]] # ancestral or derived
-  plate <- file.name.info[[4]]
-  plate.replicate <- file.name.info[[5]]
-  duration <- file.name.info[[6]]
-  #dat <- as.matrix(read.table(paste('~/GitHub/SSRP_2015/data/cleaned/', name))
+  file.name.info <- strsplit(name, "\\.") # split file name  
+  file.name.info <- file.name.info[[1]][-7]
+  file.name.data <- rbind(file.name.data, file.name.info)
   }
 
 
-
-derived <- as.matrix(read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt"))
-
 resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
 
-
-file.names
 mol.groups <- matrix("NA", nrow = 8, ncol = 12)
 mol.groups <- as.matrix(mol.groups)
 ```
