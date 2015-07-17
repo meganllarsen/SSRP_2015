@@ -174,7 +174,7 @@ for (name in file.names){
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
                       nrow=28, byrow=FALSE), stringsAsFactors=TRUE)
-dat.frame <- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
+dat.frame <- setNames(dat.frame, c('data', 'strain', 'evo.type',
                       'plate', 'plate.replicate', 'duration',
                       'i1.mean', 'i1.sd', 'i1.err', 'i1.num.resources',
                       'i2.mean', 'i2.sd', 'i2.err', 'i2.num.resources',
@@ -190,8 +190,127 @@ mol.groups <- as.matrix(read.table("./ecoplate.info/moleculetype_matrix.txt"))
 Let's examine the following questions with our data set:
   1) How many resources were used by each strain?
   2) What resources are used by each strain?
-  
+
+**24 hr data**
+
+In each data set, we have biological replicates for each strain and line, but also technical replicates for each substrate within the Ecolog plate. Let's think about why we are using the standard error of the mean, rather than the standard deviation.  
+
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
 
+se <- function(x){sd(x)/sqrt(length(x))} 
+
+# First, we need to get our data into a useable table to produce the bargraphs
+# Subset the data frame to include data from the first 24 hrs
+
+tp.24 <- subset(dat.frame,dat.frame$duration == 24)
+tp.24.dat <- tp.24[,c(2:3,5,10,14,18)]
+
+m1.24 <- melt(tp.24.dat, id = c("strain","evo.type","plate.replicate"))
+
+# Convert values into numbers
+m1.24$value <- as.numeric(as.character(m1$value))
+
+# Cast data to produce the mean number of resources for each isolate + sem
+use.means <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, mean))
+use.sem <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, se))
+```
+
+There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+par(mar = par(mar = c(3,5,2,1) + 0.1))
+
+bp <- barplot(use.means,
+        # set the plot parameters
+        ylim = c(0,15),
+        
+        #label the axises
+        xlab = list("Strain", cex = 1.5, font = 2),
+        ylab = list("Mean Number of Resources", cex = 1.5, font = 2),
+        main = "24 hours",
+        
+        #Change the plot aesthetics
+        cex.axis = 1.25, las = 1, beside = T,
+        col = c("black","White","White","White","black","White","White","White"),
+        
+        #create a legend
+        legend.text = c("Ancestor","Derived"), 
+        args.legend = list(col = c("black","white"), bty = 'n', cex = 1.15)
+        )
+#text(1.5,14,"24 hrs", cex = 2, font = 2)
+box(lwd = 3)
+
+# Let's add some error bars
+arrows(bp, use.means - use.sem, 
+       bp, use.means + use.sem, 
+       lwd = 2, angle = 90, code = 0)
+```
+
+
+**48 hour data**
+
+In each data set, we have biological replicates for each strain and line, but also technical replicates for each substrate within the Ecolog plate. Let's think about why we are using the standard error of the mean, rather than the standard deviation.  
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+
+se <- function(x){sd(x)/sqrt(length(x))} 
+
+# First, we need to get our data into a useable table to produce the bargraphs
+# Subset the data frame to include data from the first 24 hrs
+
+tp.48 <- subset(dat.frame,dat.frame$duration == 48)
+tp.48.dat <- tp.48[,c(2:3,5,10,14,18)]
+
+m1.48 <- melt(tp.48.dat, id = c("strain","evo.type","plate.replicate"))
+
+# Convert values into numbers
+m1.48$value <- as.numeric(as.character(m1.48$value))
+
+# Cast data to produce the mean number of resources for each isolate + sem
+use.means <- as.matrix(cast(m1.48, evo.type + plate.replicate ~ strain, mean))
+use.sem <- as.matrix(cast(m1.48, evo.type + plate.replicate ~ strain, se))
+```
+
+There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+par(mar = par(mar = c(3,5,2,1) + 0.1))
+
+bp2 <- barplot(use.means,
+        # set the plot parameters
+        ylim = c(0,15),
+        
+        #label the axises
+        xlab = list("Strain", cex = 1.5, font = 2),
+        ylab = list("Mean Number of Resources", cex = 1.5, font = 2),
+        main = "48 hours",
+        
+        #Change the plot aesthetics
+        cex.axis = 1.25, las = 1, beside = T,
+        col = c("black","White","White","White","black","White","White","White"),
+        
+        #create a legend
+        legend.text = c("Ancestor","Derived"), 
+        args.legend = list(col = c("black","white"), bty = 'n', cex = 1.15)
+        )
+#text(1.5,14,"24 hrs", cex = 2, font = 2)
+box(lwd = 3)
+
+# Let's add some error bars
+arrows(bp2, use.means - use.sem, 
+       bp2, use.means + use.sem, 
+       lwd = 2, angle = 90, code = 0)
+```
+
+Let's run our stats to determine if there are any differences!
+
+What is the question we are trying to answer?
+```{r}
+
+fit.24 <- aov(value ~ strain* evo.type * plate.replicate, data = m1.24)
+summary(fit.24)
+
+fit.48 <- aov(value ~ strain* evo.type * plate.replicate, data = m1.48)
+summary(fit.48)
 
 ```
