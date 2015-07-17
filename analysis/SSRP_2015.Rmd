@@ -202,17 +202,17 @@ se <- function(x){sd(x)/sqrt(length(x))}
 # First, we need to get our data into a useable table to produce the bargraphs
 # Subset the data frame to include data from the first 24 hrs
 
-tp.24 <- subset(dat.frame,dat.frame$duration == 24)
-tp.24.dat <- tp.24[,c(2:3,5,10,14,18)]
+tp.24 <- subset(dat.frame, dat.frame$duration == 24)
+tp.24.dat <- tp.24[,c(2:3, 5, 10, 14, 18)]
 
 m1.24 <- melt(tp.24.dat, id = c("strain","evo.type","plate.replicate"))
 
 # Convert values into numbers
-m1.24$value <- as.numeric(as.character(m1.24$value))
+m1.24$value <- as.matrix(as.character(m1.24$value))
 
 # Cast data to produce the mean number of resources for each isolate + sem
-use.means <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, mean))
-use.sem <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, se))
+use.means <- as.data.frame(cast(m1.24, evo.type + plate.replicate ~ strain, mean))
+use.sem <- as.data.frame(cast(m1.24, evo.type + plate.replicate ~ strain, se))
 ```
 
 There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
@@ -222,24 +222,25 @@ png(filename = "./figures/24hr-ResourcesUsed.png",
     width = 700, height = 500, units = "px", pointsize = 17, bg = "white")
 
 par(mar = par(mar = c(3,5,2,1) + 0.1))
-
-bp <- barplot(use.means,
+plot.new()
+bp <- barplot(as.matrix(use.means),
         # set the plot parameters
-        ylim = c(0,15),
+        ylim = c(0, 15),
         
-        #label the axises
+        # label the axises
         xlab = list("Strain", cex = 1.5, font = 2),
         ylab = list("Mean Number of Resources", cex = 1.5, font = 2),
         main = "24 hours",
         
         #Change the plot aesthetics
         cex.axis = 1.25, las = 1, beside = T,
-        col = c("black","White","White","White","black","White","White","White"),
+        col = c("black","White","White","White"), #"black","White","White","White"
         
         #create a legend
         legend.text = c("Ancestor","Derived"), 
         args.legend = list(col = c("black","white"), bty = 'n', cex = 1.15)
         )
+
 #text(1.5,14,"24 hrs", cex = 2, font = 2)
 box(lwd = 3)
 
