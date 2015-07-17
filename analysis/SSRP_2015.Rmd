@@ -59,6 +59,7 @@ cutoff <- function(vals){
   # should also return the error
   water <- vals[1]
   vals <- vals[-1]
+  
   # mean, error, sd, should be based on resource qualified as being used
   std <- sd(vals)
   avg <- mean(vals)
@@ -81,7 +82,9 @@ But first, we need to find the average use values for water that were recorded f
 We will use these values, which really do not reflect resource use, to normalize (or make comparable) the resource use values across different plates.
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+#file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+file.path <- "./data/cleaned/"
+
 file.names <- list.files(path = file.path, all.files=FALSE, 
                     full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
 
@@ -109,10 +112,12 @@ for (name in file.names){
 ```
 
 
-Next we save the world...
+Next we save the world... and normalize our data
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+#file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+file.path <- "./data/cleaned/"
+
 file.name.data <- c()
 for (name in file.names){
   file.name.info <- strsplit(name, "\\.") # split file name
@@ -132,6 +137,7 @@ for (name in file.names){
     
     # Calculate the mean reading for water
     avg.water <- mean(data[1,1], data[1,5], data[1,9])
+    
     # Remove background and Normalize the data
     data <- round(data * (norm.val/avg.water), digits = 3)
     }
@@ -168,88 +174,24 @@ for (name in file.names){
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
                       nrow=28, byrow=FALSE), stringsAsFactors=TRUE)
-dat.frame<- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
+dat.frame <- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
                       'plate', 'plate.replicate', 'duration',
                       'i1.mean', 'i1.sd', 'i1.err', 'i1.num.resources',
                       'i2.mean', 'i2.sd', 'i2.err', 'i2.num.resources',
                       'i3.mean', 'i3.sd', 'i3.err', 'i3.num.resources'))
 
-resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
-mol.groups <- matrix("NA", nrow = 8, ncol = 12)
-mol.groups <- as.matrix(mol.groups)
+resource.names <- as.matrix(read.table("./ecoplate.info/resource_matrix.txt"))
+mol.groups <- as.matrix(read.table("./ecoplate.info/moleculetype_matrix.txt"))
+
 ```
 
+## 3) Analyzing and visualizing data
 
-### 3) NORMALIZING DATA
-Because the number of cells can vary across plates, it's important to normalize our data, i.e., make our resulting values directly comparable. We will do this using the value recorded for the well where there was only **water** from the ancestral plate.
+Let's examine the following questions with our data set:
+  1) How many resources were used by each strain?
+  2) What resources are used by each strain?
+  
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
 
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
-file.names <- list.files(path = file.path, all.files=FALSE, 
-                    full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
-
-file.name.data <- c() 
-for (name in file.names){
-  ## Load Data
-  a <- read.table(paste(file.path, name, sep=''))
-  ancestral <- as.matrix(a)
-
-  d <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt")
-  derived <- as.matrix(d)
-
-  names <- read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt")
-  ecolog.names <- as.matrix(names)
-  }
-
-# We reshape our data from a matrix to long format
-m1.a <- melt(ancestral); m1.d <- melt(derived)
-m1.names <- melt(resource.names); m1.groups <- melt(mol.groups)
-
-# Next, merge the columns of interest together
-dat <- data.frame(mol.groups[,3], as.character(m1.names[,3]), m1.a[,3], m1.d[,3])
-
-# Remove the background
-background <- 0.042
-
-dat[,3:4] <- dat[,3:4] - background
-colnames(dat) <- c("sub.group","substrate","anc","der")
-
-# Calculate the mean reading for water
-anc.water <- mean(subset(dat, dat[,2]=="Water")[1:3,3])
-der.water <- mean(subset(dat, dat[,2]=="Water")[1:3,4])
-
-#Remove background and Normalize the data
-dat$anc.norm <- dat$anc * (anc.water/anc.water) 
-dat$der.norm <- round(dat$der * (anc.water/der.water), digits = 3) 
-```
-
-
-### 1.) Average resource use
-Let's examine the following questions:
-1) How many resources were used by each strain?
-2) What resources are used by each strain?
-
-Because water does not contain a carbon substrate, it will act as our control data. If the adsorbance value is greater than the adsorbance of water, we will include it in the number of used resources.
-
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-m2 <- melt(dat, ids = c("sub.group","substrate"))
-c1 <- cast(m2, substrate ~ variable , mean)
-
-threshold <- 0.037
-
-length(c1[,3][c1[,3] > threshold])
-length(c1[,4][c1[,4] > threshold])
-```
-
-Let's visualize the resources used per isolate
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-c1 <- as.matrix(c1)
-
-barplot(c1[,3:4],
-        width = 1, beside = T,
-        ylim = c(0,1), las = 1, cex.axis = 1.15,
-        main = "Resource Use",
-        xlab = list("Substrate", cex = 1.5, font = 2),
-        ylab = list("OD", cex = 1.5, font = 2))
 
 ```
