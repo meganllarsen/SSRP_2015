@@ -208,7 +208,7 @@ tp.24.dat <- tp.24[,c(2:3,5,10,14,18)]
 m1.24 <- melt(tp.24.dat, id = c("strain","evo.type","plate.replicate"))
 
 # Convert values into numbers
-m1.24$value <- as.numeric(as.character(m1$value))
+m1.24$value <- as.numeric(as.character(m1.24$value))
 
 # Cast data to produce the mean number of resources for each isolate + sem
 use.means <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, mean))
@@ -218,6 +218,9 @@ use.sem <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, se))
 There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+png(filename = "./figures/24hr-ResourcesUsed.png",
+    width = 700, height = 500, units = "px", pointsize = 17, bg = "white")
+
 par(mar = par(mar = c(3,5,2,1) + 0.1))
 
 bp <- barplot(use.means,
@@ -244,6 +247,8 @@ box(lwd = 3)
 arrows(bp, use.means - use.sem, 
        bp, use.means + use.sem, 
        lwd = 2, angle = 90, code = 0)
+
+dev.off()
 ```
 
 
@@ -256,7 +261,7 @@ In each data set, we have biological replicates for each strain and line, but al
 se <- function(x){sd(x)/sqrt(length(x))} 
 
 # First, we need to get our data into a useable table to produce the bargraphs
-# Subset the data frame to include data from the first 24 hrs
+# Subset the data frame to include data from 48 hrs
 
 tp.48 <- subset(dat.frame,dat.frame$duration == 48)
 tp.48.dat <- tp.48[,c(2:3,5,10,14,18)]
