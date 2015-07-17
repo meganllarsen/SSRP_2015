@@ -59,6 +59,7 @@ cutoff <- function(vals){
   # should also return the error
   water <- vals[1]
   vals <- vals[-1]
+  
   # mean, error, sd, should be based on resource qualified as being used
   std <- sd(vals)
   avg <- mean(vals)
@@ -81,7 +82,9 @@ But first, we need to find the average use values for water that were recorded f
 We will use these values, which really do not reflect resource use, to normalize (or make comparable) the resource use values across different plates.
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+#file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+file.path <- "./data/cleaned/"
+
 file.names <- list.files(path = file.path, all.files=FALSE, 
                     full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
 
@@ -109,10 +112,12 @@ for (name in file.names){
 ```
 
 
-Next we save the world...
+Next we save the world... and normalize our data
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+#file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+file.path <- "./data/cleaned/"
+
 file.name.data <- c()
 for (name in file.names){
   file.name.info <- strsplit(name, "\\.") # split file name
@@ -132,6 +137,7 @@ for (name in file.names){
     
     # Calculate the mean reading for water
     avg.water <- mean(data[1,1], data[1,5], data[1,9])
+    
     # Remove background and Normalize the data
     data <- round(data * (norm.val/avg.water), digits = 3)
     }
@@ -168,88 +174,148 @@ for (name in file.names){
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
                       nrow=28, byrow=FALSE), stringsAsFactors=TRUE)
-dat.frame<- setNames(dat.frame, c('data', 'strain', 'Ancestor_or_Derived',
+dat.frame <- setNames(dat.frame, c('data', 'strain', 'evo.type',
                       'plate', 'plate.replicate', 'duration',
                       'i1.mean', 'i1.sd', 'i1.err', 'i1.num.resources',
                       'i2.mean', 'i2.sd', 'i2.err', 'i2.num.resources',
                       'i3.mean', 'i3.sd', 'i3.err', 'i3.num.resources'))
 
-resource.names <- as.matrix(read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt"))
-mol.groups <- matrix("NA", nrow = 8, ncol = 12)
-mol.groups <- as.matrix(mol.groups)
+resource.names <- as.matrix(read.table("./ecoplate.info/resource_matrix.txt"))
+mol.groups <- as.matrix(read.table("./ecoplate.info/moleculetype_matrix.txt"))
+
+```
+
+## 3) Analyzing and visualizing data
+
+Let's examine the following questions with our data set:
+  1) How many resources were used by each strain?
+  2) What resources are used by each strain?
+
+**24 hr data**
+
+In each data set, we have biological replicates for each strain and line, but also technical replicates for each substrate within the Ecolog plate. Let's think about why we are using the standard error of the mean, rather than the standard deviation.  
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+
+se <- function(x){sd(x)/sqrt(length(x))} 
+
+# First, we need to get our data into a useable table to produce the bargraphs
+# Subset the data frame to include data from the first 24 hrs
+
+tp.24 <- subset(dat.frame,dat.frame$duration == 24)
+tp.24.dat <- tp.24[,c(2:3,5,10,14,18)]
+
+m1.24 <- melt(tp.24.dat, id = c("strain","evo.type","plate.replicate"))
+
+# Convert values into numbers
+m1.24$value <- as.numeric(as.character(m1.24$value))
+
+# Cast data to produce the mean number of resources for each isolate + sem
+use.means <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, mean))
+use.sem <- as.matrix(cast(m1.24, evo.type + plate.replicate ~ strain, se))
+```
+
+There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
+
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+png(filename = "./figures/24hr-ResourcesUsed.png",
+    width = 700, height = 500, units = "px", pointsize = 17, bg = "white")
+
+par(mar = par(mar = c(3,5,2,1) + 0.1))
+
+bp <- barplot(use.means,
+        # set the plot parameters
+        ylim = c(0,15),
+        
+        #label the axises
+        xlab = list("Strain", cex = 1.5, font = 2),
+        ylab = list("Mean Number of Resources", cex = 1.5, font = 2),
+        main = "24 hours",
+        
+        #Change the plot aesthetics
+        cex.axis = 1.25, las = 1, beside = T,
+        col = c("black","White","White","White","black","White","White","White"),
+        
+        #create a legend
+        legend.text = c("Ancestor","Derived"), 
+        args.legend = list(col = c("black","white"), bty = 'n', cex = 1.15)
+        )
+#text(1.5,14,"24 hrs", cex = 2, font = 2)
+box(lwd = 3)
+
+# Let's add some error bars
+arrows(bp, use.means - use.sem, 
+       bp, use.means + use.sem, 
+       lwd = 2, angle = 90, code = 0)
+
+dev.off()
 ```
 
 
-### 3) NORMALIZING DATA
-Because the number of cells can vary across plates, it's important to normalize our data, i.e., make our resulting values directly comparable. We will do this using the value recorded for the well where there was only **water** from the ancestral plate.
+**48 hour data**
 
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
-file.names <- list.files(path = file.path, all.files=FALSE, 
-                    full.names=FALSE, ignore.case=FALSE, include.dirs=FALSE)
+In each data set, we have biological replicates for each strain and line, but also technical replicates for each substrate within the Ecolog plate. Let's think about why we are using the standard error of the mean, rather than the standard deviation.  
 
-file.name.data <- c() 
-for (name in file.names){
-  ## Load Data
-  a <- read.table(paste(file.path, name, sep=''))
-  ancestral <- as.matrix(a)
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
 
-  d <- read.table("~/GitHub/SSRP_2015/data/cleaned/0723_3C_07_12_2015_RNF_parsed.txt")
-  derived <- as.matrix(d)
+se <- function(x){sd(x)/sqrt(length(x))} 
 
-  names <- read.table("~/GitHub/SSRP_2015/ecoplate.info/resource_matrix.txt")
-  ecolog.names <- as.matrix(names)
-  }
+# First, we need to get our data into a useable table to produce the bargraphs
+# Subset the data frame to include data from 48 hrs
 
-# We reshape our data from a matrix to long format
-m1.a <- melt(ancestral); m1.d <- melt(derived)
-m1.names <- melt(resource.names); m1.groups <- melt(mol.groups)
+tp.48 <- subset(dat.frame,dat.frame$duration == 48)
+tp.48.dat <- tp.48[,c(2:3,5,10,14,18)]
 
-# Next, merge the columns of interest together
-dat <- data.frame(mol.groups[,3], as.character(m1.names[,3]), m1.a[,3], m1.d[,3])
+m1.48 <- melt(tp.48.dat, id = c("strain","evo.type","plate.replicate"))
 
-# Remove the background
-background <- 0.042
+# Convert values into numbers
+m1.48$value <- as.numeric(as.character(m1.48$value))
 
-dat[,3:4] <- dat[,3:4] - background
-colnames(dat) <- c("sub.group","substrate","anc","der")
-
-# Calculate the mean reading for water
-anc.water <- mean(subset(dat, dat[,2]=="Water")[1:3,3])
-der.water <- mean(subset(dat, dat[,2]=="Water")[1:3,4])
-
-#Remove background and Normalize the data
-dat$anc.norm <- dat$anc * (anc.water/anc.water) 
-dat$der.norm <- round(dat$der * (anc.water/der.water), digits = 3) 
+# Cast data to produce the mean number of resources for each isolate + sem
+use.means <- as.matrix(cast(m1.48, evo.type + plate.replicate ~ strain, mean))
+use.sem <- as.matrix(cast(m1.48, evo.type + plate.replicate ~ strain, se))
 ```
 
+There are several ways to visualize this data set. Using the two matrices we just created, let's now make a bar plot with the mean data. Is this the most appropriate way to look at our data?
 
-### 1.) Average resource use
-Let's examine the following questions:
-1) How many resources were used by each strain?
-2) What resources are used by each strain?
+```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
+par(mar = par(mar = c(3,5,2,1) + 0.1))
 
-Because water does not contain a carbon substrate, it will act as our control data. If the adsorbance value is greater than the adsorbance of water, we will include it in the number of used resources.
+bp2 <- barplot(use.means,
+        # set the plot parameters
+        ylim = c(0,15),
+        
+        #label the axises
+        xlab = list("Strain", cex = 1.5, font = 2),
+        ylab = list("Mean Number of Resources", cex = 1.5, font = 2),
+        main = "48 hours",
+        
+        #Change the plot aesthetics
+        cex.axis = 1.25, las = 1, beside = T,
+        col = c("black","White","White","White","black","White","White","White"),
+        
+        #create a legend
+        legend.text = c("Ancestor","Derived"), 
+        args.legend = list(col = c("black","white"), bty = 'n', cex = 1.15)
+        )
+#text(1.5,14,"24 hrs", cex = 2, font = 2)
+box(lwd = 3)
 
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-m2 <- melt(dat, ids = c("sub.group","substrate"))
-c1 <- cast(m2, substrate ~ variable , mean)
-
-threshold <- 0.037
-
-length(c1[,3][c1[,3] > threshold])
-length(c1[,4][c1[,4] > threshold])
+# Let's add some error bars
+arrows(bp2, use.means - use.sem, 
+       bp2, use.means + use.sem, 
+       lwd = 2, angle = 90, code = 0)
 ```
 
-Let's visualize the resources used per isolate
-```{r, results = 'hide', echo=TRUE, message = FALSE, warning = FALSE}
-c1 <- as.matrix(c1)
+Let's run our stats to determine if there are any differences!
 
-barplot(c1[,3:4],
-        width = 1, beside = T,
-        ylim = c(0,1), las = 1, cex.axis = 1.15,
-        main = "Resource Use",
-        xlab = list("Substrate", cex = 1.5, font = 2),
-        ylab = list("OD", cex = 1.5, font = 2))
+What is the question we are trying to answer?
+```{r}
+
+fit.24 <- aov(value ~ strain* evo.type * plate.replicate, data = m1.24)
+summary(fit.24)
+
+fit.48 <- aov(value ~ strain* evo.type * plate.replicate, data = m1.48)
+summary(fit.48)
 
 ```
