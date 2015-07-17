@@ -115,8 +115,8 @@ for (name in file.names){
 Next we save the world... and normalize our data
 
 ```{r, results = 'hide', echo=FALSE, message = FALSE, warning = FALSE}
-#file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
-file.path <- "./data/cleaned/"
+file.path <- "~/GitHub/SSRP_2015/data/cleaned/"
+#file.path <- "./data/cleaned/"
 
 file.name.data <- c()
 for (name in file.names){
@@ -173,7 +173,7 @@ for (name in file.names){
   }
 
 dat.frame <- data.frame(matrix(unlist(file.name.data),
-                      nrow=28, byrow=FALSE), stringsAsFactors=TRUE)
+                      nrow=length(file.names), byrow=FALSE), stringsAsFactors=TRUE)
 dat.frame <- setNames(dat.frame, c('data', 'strain', 'evo.type',
                       'plate', 'plate.replicate', 'duration',
                       'i1.mean', 'i1.sd', 'i1.err', 'i1.num.resources',
